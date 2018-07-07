@@ -50,7 +50,8 @@ bool analyUrl(char *url){
     else{
         pos=pos+7;
     }
-    scanf(pos,"%[`/]%s",host,othPath);      //http://后一直到/之前的主机名称
+   //printf("pos:%s",pos);
+    sscanf(pos,"%[^/]%s",host,othPath);      //http://后一直到/之前的主机名称
     cout<<"host:"<<host<<"repath:"<<othPath<<endl;
     return true;
 }
@@ -87,26 +88,27 @@ void preConnect(){
     if(sock<0){
         ERR_EXIT("建立socket失败！错误码：");
     }
-    struct hostent *p =gethostbyname("www.baidu.com");
+    struct hostent *p =gethostbyname(host);
     if(p==NULL){
         ERR_EXIT("hostent");
     }
     struct sockaddr_in myaddr;
     myaddr.sin_family=AF_INET;
     //memcpy(&myaddr.sin_addr.s_addr,p->h_addr,4);
-    myaddr.sin_addr=*(struct in_addr*)*p->h_addr_list;
-    myaddr.sin_port=htons(80);
-    int n=bind(sock,(struct sockaddr*)&myaddr,sizeof(myaddr));
+    myaddr.sin_addr.s_addr=INADDR_ANY;
+    int n=bind(sock,(sockaddr*)&myaddr,sizeof(myaddr));
     if(n<0){
         ERR_EXIT("bind");
     }
+    myaddr.sin_addr=*(struct in_addr*)*p->h_addr_list;
+    myaddr.sin_port=htons(80);
     n=connect(sock,(sockaddr*)&myaddr,sizeof(myaddr));
     if(n<0){
         ERR_EXIT("connect");
     }
-    //向服务器发送GET请求，下载图片
-    string reqInfo="GET"+(string)othPath+"HTTP/1.1\r\nHost"+(string)host+"\r\nConnection:Close\r\n\r\n";
-    if(write(sock,reqInfo.c_str(),reqInfo.size())){
+    //向服务器发送GET请求，下载图 
+    string  reqInfo = "GET " + (string)othPath + " HTTP/1.1\r\nHost: " + (string)host + "\r\nConnection:Close\r\n\r\n";
+    if((write(sock,reqInfo.c_str(),reqInfo.size()))<0){
         close(sock);
         ERR_EXIT("write");
     }
@@ -170,7 +172,8 @@ void bfs(string beginUrl){
         q.pop();
         char tmp[800];
         strcpy(tmp,cur.c_str());
-        analyUrl(tmp);
+        //printf("tmp: %s",tmp);
+        analyUrl(tmp);      
         preConnect();
         putImageToSet();
         vector<string>::iterator ita=photoUrl.begin();
@@ -194,7 +197,6 @@ int main(){
     if((mkdir("./img",0766)<0)){
         ERR_EXIT("mkdir");
     }
-    //string beginUrl="war.163.com/";
     bfs(surl);
     return 0;
 }

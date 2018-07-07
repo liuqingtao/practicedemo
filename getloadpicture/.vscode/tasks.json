@@ -4,6 +4,6 @@
     "version": "0.1.0",
     "command": "g++",
     "isShellCommand": true,
-    "args": ["-g","${workspaceRoot}/${fileBasename}","-o","${workspaceRoot}/${fileBasenameNoExtension}.out"],
+    "args": ["-g","-Wall","-std=c++11","${workspaceRoot}/${fileBasename}","-o","${workspaceRoot}/${fileBasenameNoExtension}.out"],
     "showOutput": "always"
 }
